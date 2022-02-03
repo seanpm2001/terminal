@@ -1005,12 +1005,17 @@ void Terminal::_WriteBuffer(const std::wstring_view& stringView)
     cursor.EndDeferDrawing();
 }
 
-void Terminal::_AdjustCursorPosition(const COORD proposedPosition)
+void Terminal::_AdjustCursorPosition(COORD proposedCursorPosition)
 {
 #pragma warning(suppress : 26496) // cpp core checks wants this const but it's modified below.
-    auto proposedCursorPosition = proposedPosition;
     auto& cursor = _buffer->GetCursor();
     const Viewport bufferSize = _buffer->GetSize();
+
+    if (const auto width = bufferSize.Width(); proposedCursorPosition.X >= width)
+    {
+        proposedCursorPosition.X = 0;
+        proposedCursorPosition.Y++;
+    }
 
     // If we're about to scroll past the bottom of the buffer, instead cycle the
     // buffer.
