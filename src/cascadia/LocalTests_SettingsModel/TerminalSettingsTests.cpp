@@ -217,7 +217,7 @@ namespace SettingsModelLocalTests
             TestCase{ L"cmd.exe", 0 },
             // SearchPathW() normalization + case insensitive matching.
             TestCase{ L"cmd.exe /a", 1 },
-            TestCase{ L"C:\\Windows\\System32\\cmd.exe /A", 1 },
+            TestCase{ L"%SystemRoot%\\System32\\cmd.exe /A", 1 },
             // Test that we don't pick the equally long but different "/A /B" variant.
             TestCase{ L"C:\\Windows\\System32\\cmd.exe /A /C", 1 },
             // Test that we don't pick the shorter "/A" variant,
@@ -245,6 +245,9 @@ namespace SettingsModelLocalTests
             }
             else
             {
+                auto cmd = implementation::CascadiaSettings::NormalizeCommandLine(testCase.input.data());
+                std::replace(cmd.begin(), cmd.end(), L'\0', L'~');
+                Log::Comment(cmd.c_str());
                 GUID expectedGUID{ 0x6239a42c, static_cast<uint16_t>(0x1111 * testCase.expected), 0x49a3, { 0x80, 0xbd, 0xe8, 0xfd, 0xd0, 0x45, 0x18, 0x5c } };
                 VERIFY_ARE_EQUAL(expectedGUID, static_cast<const GUID&>(profile.Guid()));
             }
