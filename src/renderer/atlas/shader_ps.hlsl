@@ -48,7 +48,7 @@ cbuffer ConstBuffer : register(b0)
     uint backgroundColor;
     uint cursorColor;
     uint selectionColor;
-    uint useClearType;
+    bool useClearType;
 };
 StructuredBuffer<Cell> cells : register(t0);
 Texture2D<float4> glyphs : register(t1);
@@ -100,7 +100,7 @@ float4 main(float4 pos: SV_Position): SV_Target
 
     // Layer 1 (optional):
     // Colored cursors are drawn "in between" the background color and the text of a cell.
-    if ((cell.flags & CellFlags_Cursor) && cursorColor != INVALID_COLOR)
+    [branch] if ((cell.flags & CellFlags_Cursor) && cursorColor != INVALID_COLOR)
     {
         // The cursor texture is stored at the top-left-most glyph cell.
         // Cursor pixels are either entirely transparent or opaque.
@@ -110,11 +110,11 @@ float4 main(float4 pos: SV_Position): SV_Target
 
     // Layer 2:
     // Step 1: Underlines
-    if ((cell.flags & CellFlags_Underline) && cellPos.y >= underlinePos.x && cellPos.y < underlinePos.y)
+    [branch] if ((cell.flags & CellFlags_Underline) && cellPos.y >= underlinePos.x && cellPos.y < underlinePos.y)
     {
         color = alphaBlendPremultiplied(color, fg);
     }
-    if ((cell.flags & CellFlags_UnderlineDotted) && cellPos.y >= underlinePos.x && cellPos.y < underlinePos.y && (viewportPos.x / (underlinePos.y - underlinePos.x) & 3) == 0)
+    [branch] if ((cell.flags & CellFlags_UnderlineDotted) && cellPos.y >= underlinePos.x && cellPos.y < underlinePos.y && (viewportPos.x / (underlinePos.y - underlinePos.x) & 3) == 0)
     {
         color = alphaBlendPremultiplied(color, fg);
     }
@@ -122,35 +122,38 @@ float4 main(float4 pos: SV_Position): SV_Target
     {
         float4 glyph = glyphs[decodeU16x2(cell.glyphPos) + cellPos];
 
-        if (cell.flags & CellFlags_ColoredGlyph)
+        [branch] if (cell.flags & CellFlags_ColoredGlyph)
         {
             color = alphaBlendPremultiplied(color, glyph);
         }
-        else if (useClearType)
-        {
-            color = DWrite_CleartypeBlend(gammaRatios, enhancedContrast, false, color, fg, glyph);
-        }
         else
         {
-            color = alphaBlendPremultiplied(color, DWrite_GrayscaleBlend(gammaRatios, enhancedContrast, false, fg, glyph.a));
+            [branch] if (useClearType)
+            {
+                color = DWrite_ClearTypeBlend(gammaRatios, enhancedContrast, false, color, fg, glyph);
+            }
+            else
+            {
+                color = alphaBlendPremultiplied(color, DWrite_GrayscaleBlend(gammaRatios, enhancedContrast, false, fg, glyph.a));
+            }
         }
     }
     // Step 3: Lines, but not "under"lines
-    if ((cell.flags & CellFlags_Strikethrough) && cellPos.y >= strikethroughPos.x && cellPos.y < strikethroughPos.y)
+    [branch] if ((cell.flags & CellFlags_Strikethrough) && cellPos.y >= strikethroughPos.x && cellPos.y < strikethroughPos.y)
     {
         color = alphaBlendPremultiplied(color, fg);
     }
 
     // Layer 3 (optional):
     // Uncolored cursors invert the cells color.
-    if ((cell.flags & CellFlags_Cursor) && cursorColor == INVALID_COLOR)
+    [branch] if ((cell.flags & CellFlags_Cursor) && cursorColor == INVALID_COLOR)
     {
         color.rgb = abs(glyphs[cellPos].rgb - color.rgb);
     }
 
     // Layer 4:
     // The current selection is drawn semi-transparent on top.
-    if (cell.flags & CellFlags_Selected)
+    [branch] if (cell.flags & CellFlags_Selected)
     {
         color = alphaBlendPremultiplied(color, decodeRGBA(selectionColor));
     }

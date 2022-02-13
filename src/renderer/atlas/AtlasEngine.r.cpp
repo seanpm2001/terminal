@@ -61,11 +61,6 @@ try
     _r.deviceContext->OMSetRenderTargets(1, _r.renderTargetView.addressof(), nullptr);
     _r.deviceContext->Draw(3, 0);
 
-    // See documentation for IDXGISwapChain2::GetFrameLatencyWaitableObject method:
-    // > For every frame it renders, the app should wait on this handle before starting any rendering operations.
-    // > Note that this requirement includes the first frame the app renders with the swap chain.
-    assert(_r.frameLatencyWaitableObjectUsed);
-
     // > IDXGISwapChain::Present: Partial Presentation (using a dirty rects or scroll) is not supported
     // > for SwapChains created with DXGI_SWAP_EFFECT_DISCARD or DXGI_SWAP_EFFECT_FLIP_DISCARD.
     // ---> No need to call IDXGISwapChain1::Present1.

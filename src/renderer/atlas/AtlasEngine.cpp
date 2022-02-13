@@ -393,25 +393,11 @@ CATCH_RETURN()
 
 [[nodiscard]] bool AtlasEngine::RequiresContinuousRedraw() noexcept
 {
-    return continuousRedraw;
+    return true;
 }
 
 void AtlasEngine::WaitUntilCanRender() noexcept
 {
-    if constexpr (!debugGeneralPerformance)
-    {
-        if (_r.frameLatencyWaitableObject)
-        {
-            WaitForSingleObjectEx(_r.frameLatencyWaitableObject.get(), 100, true);
-#ifndef NDEBUG
-            _r.frameLatencyWaitableObjectUsed = true;
-#endif
-        }
-        else
-        {
-            Sleep(8);
-        }
-    }
 }
 
 [[nodiscard]] HRESULT AtlasEngine::PrepareForTeardown(_Out_ bool* const pForcePaint) noexcept

@@ -757,8 +757,8 @@ namespace Microsoft::Console::Render
             wil::unique_handle swapChainHandle;
             HWND hwnd = nullptr;
             u16 dpi = USER_DEFAULT_SCREEN_DPI; // changes are flagged as ApiInvalidations::Font|Size
-            u8 antialiasingMode = D2D1_TEXT_ANTIALIAS_MODE_CLEARTYPE; // changes are flagged as ApiInvalidations::Font
-            u8 realizedAntialiasingMode = D2D1_TEXT_ANTIALIAS_MODE_CLEARTYPE; // caches antialiasingMode, depends on antialiasingMode and backgroundOpaqueMixin, see _resolveAntialiasingMode
+            u8 antialiasingMode = D2D1_TEXT_ANTIALIAS_MODE_GRAYSCALE; // changes are flagged as ApiInvalidations::Font
+            u8 realizedAntialiasingMode = D2D1_TEXT_ANTIALIAS_MODE_GRAYSCALE; // caches antialiasingMode, depends on antialiasingMode and backgroundOpaqueMixin, see _resolveAntialiasingMode
 
             ApiInvalidations invalidations = ApiInvalidations::Device;
         } _api;
